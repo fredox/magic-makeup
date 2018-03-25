@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+	<body>
+
+		<canvas onmousedown="brushDown(event);" onmouseup="brushUp(event);" onmousemove="brushMove(event);" id="front"></canvas>
+		<canvas id="back"></canvas>
+		<img id="front-img" width="310" height="163" src="face.jpg">
+		<img id="back-img" width="310" height="163" src="flowers.jpg">
+
+	</body>
+
+	<script type="text/javascript">
+		var brushDiameter = 8;
+		var alphaFactor = '0.02';
+
+		var painting = false;
+
+		var back_canvas  = document.getElementById('back');
+		var back_context = back_canvas.getContext('2d');
+
+		var front_canvas  = document.getElementById('front');
+		var front_context = front_canvas.getContext('2d');	
+
+		var image_data_back;
+
+		function brushDown() { painting = true; }
+		function brushUp() { painting = false; }
+
+		function brushMove(e) {
+			if (painting) 
+				paint(e.layerX, e.layerY, brushDiameter);
+		}
+
+
+		function paint(x, y, brushDiameter)
+		{
+			var points = generatePointsInAcircle(x, y, brushDiameter, 200);
+
+			for (var i=0; i<=200; i++) {
+				if (typeof points[i] == 'undefined')
+					continue;
+
+				var rgba = getCoordColorComponents(image_data_back,points[i].x,points[i].y,back_canvas);
+				//var alpha = rgba[3];
+				front_context.fillStyle = 'rgb('+ rgba[0] + ',' + rgba[1] + ',' +  rgba[2] + ',' + alphaFactor +')';
+      			front_context.fillRect(points[i].x, points[i].y, 1, 1);
+      		}
+		}
+
+		function loadImages(backId, backCanvasContext, frontId, frontCanvasContext) {
+
+   			var back_element_image = document.getElementById(backId);
+			var back_image = new Image()
+			back_image.src=back_element_image.src;
+
+   			back_image.setAttribute('crossOrigin', '');
+  			back_image.onload = function(){
+    			backCanvasContext.drawImage(back_image, 0, 0);
+    			image_data_back = backCanvasContext.getImageData(
+    				0,
+    				0,
+    				back_canvas.width,
+    				back_canvas.height
+    			);
+    		}
+
+    		var front_element_image = document.getElementById(frontId);
+			var front_image = new Image()
+			front_image.src=front_element_image.src;
+
+  			front_image.onload = function(){
+    			frontCanvasContext.drawImage(front_image, 0, 0);
+    		}
+   		}
+
+   		function getCoordColorComponents(imgData, x, y, canvas)
+   		{
+   			var width = canvas.width;
+
+   			var redIdx   = y * (width * 4) + x * 4;
+   			var blueIdx  = redIdx + 1;
+   			var greenIdx = redIdx + 2;
+   			var alphaIdx = redIdx + 4;
+
+   			return [
+   				imgData.data[redIdx],
+   				imgData.data[blueIdx],
+   				imgData.data[greenIdx],
+   				imgData.data[alphaIdx]
+   			];
+   		}
+
+   		function generatePointsInAcircle(xpos, ypos, radius, n)
+   		{
+   			var points = [];
+
+   			for (var i=0;i<n;i++) {
+   			
+				var pt_angle = Math.random() * 2 * Math.PI;
+    			var pt_radius_sq = Math.random() * radius * radius;
+    			var x = Math.sqrt(pt_radius_sq) * Math.cos(pt_angle) + xpos;
+    			var y = Math.sqrt(pt_radius_sq) * Math.sin(pt_angle) + ypos;
+
+				points[i] = {'x':Math.floor(x), 'y':Math.floor(y)};
+			}
+
+			return points;
+   		}
+
+		loadImages('back-img', back_context, 'front-img', front_context);
+   		
+	</script>
+</html>

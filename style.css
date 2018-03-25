@@ -1,0 +1,20 @@
+#front {
+	margin-left: 25%;
+	position: absolute; top: 30px;
+	border:1px solid black;
+}
+
+#back {
+	margin-left: 25%;
+	position: absolute; top: 30px;;
+	border:1px solid red;
+	z-index:-1;
+}
+
+#front-img {
+	display: none;
+}
+
+#back-img {
+	display: none;
+}
